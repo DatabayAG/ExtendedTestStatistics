@@ -114,3 +114,24 @@ if (!$ilDB->tableExists('etstat_params'))
     	$ilDB->query('ALTER TABLE etstat_params MODIFY value VARCHAR(100)');
     }
 ?>
+<#6>
+<?php
+if (!$ilDB->tableExists('etstat_exports'))
+{
+    $fields = [
+        'obj_id' => [
+            'type' => 'integer',
+            'length' => 4,
+            'notnull' => true,
+        ],
+        'rid' => [
+            'type' => 'text',
+            'length' => 64,
+            'notnull' => true,
+        ]
+    ];
+    $ilDB->createTable("etstat_exports", $fields);
+    $ilDB->addPrimaryKey("etstat_exports", ['rid']);
+    $ilDB->addIndex('etstat_exports', ['obj_id'], 'i1');
+}
+?>

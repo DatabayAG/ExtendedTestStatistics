@@ -130,7 +130,6 @@ qst_choices_count#:#Count
 qst_choices_answer_options#:#Answer Options
 not_for_fixed_test#:#Not available for fixed question set
 not_for_random_test#:#Not available for random question set
-not_for_dynamic_test#:#Not available for dynamic test
 not_for_test_type#:#Nicht available for this test type
 not_for_question_type#:#Nicht available for this question type
 exp_type_excel_overviews#:#Microsoft Excel

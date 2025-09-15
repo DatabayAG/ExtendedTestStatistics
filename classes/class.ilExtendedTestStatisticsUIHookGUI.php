@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
@@ -10,25 +11,23 @@ class ilExtendedTestStatisticsUIHookGUI extends ilUIHookPluginGUI
 {
     protected ilCtrlInterface $ctrl;
     protected ilTabsGUI $tabs;
-    
-    
-	/**
-	 * Modify GUI objects, before they generate ouput
-	 *
-	 * @param string $a_comp component
-	 * @param string $a_part string that identifies the part of the UI that is handled
-	 * @param array $a_par array of parameters (depend on $a_comp and $a_part)
-	 */
+
+
+    /**
+     * Modify GUI objects, before they generate ouput
+     *
+     * @param string $a_comp component
+     * @param string $a_part string that identifies the part of the UI that is handled
+     * @param array $a_par array of parameters (depend on $a_comp and $a_part)
+     */
     public function modifyGUI(
         string $a_comp,
         string $a_part,
         array $a_par = []
-    ): void
-	{
-		switch ($a_part)
-		{
-			// case 'tabs':
-			case 'sub_tabs':
+    ): void {
+        switch ($a_part) {
+            // case 'tabs':
+            case 'sub_tabs':
 
                 // must be done here because ctrl and tabs are not initialized for all calls
                 global $DIC;
@@ -36,59 +35,56 @@ class ilExtendedTestStatisticsUIHookGUI extends ilUIHookPluginGUI
                 $this->tabs = $DIC->tabs();
 
 
-                if ($this->ctrl->getCmdClass() == 'iltestevaluationgui'
-					and in_array($this->ctrl->getCmd(), array('outEvaluation','eval_a','singleResults')))
-				{
+                if ($this->ctrl->getCmdClass() == 'iltestparticipantsgui') {
                     $this->tabs->removeSubTab('tst_results_aggregated');
-					$this->ctrl->saveParameterByClass('ilExtendedTestStatisticsPageGUI','ref_id');
+                    $this->ctrl->saveParameterByClass('ilExtendedTestStatisticsPageGUI', 'ref_id');
 
-					// we need to use the deprecated method because evaluation sub tabs work with automatic activation
-					// with addSubTab the new sub tabs would always be activated
-					$this->tabs->addSubTabTarget(
-						$this->plugin_object->txt('test_results'), // text is also the subtab id
-						$this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI','ilExtendedTestStatisticsPageGUI'), 'showTestOverview'),
-						array('showTestOverview','showTestDetails'), // commands to be recognized for activation
-						'ilExtendedTestStatisticsPageGUI', 	// cmdClass to be recognized activation
-						'', 								// frame
-						false, 								// manual activation
-						true								// text is direct, not a language var
-					);
+                    // we need to use the deprecated method because evaluation sub tabs work with automatic activation
+                    // with addSubTab the new sub tabs would always be activated
+                    $this->tabs->addSubTabTarget(
+                        $this->plugin_object->txt('test_results'), // text is also the subtab id
+                        $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI','ilExtendedTestStatisticsPageGUI'), 'showTestOverview'),
+                        array('showTestOverview','showTestDetails'), // commands to be recognized for activation
+                        'ilExtendedTestStatisticsPageGUI', 	// cmdClass to be recognized activation
+                        '', 								// frame
+                        false, 								// manual activation
+                        true								// text is direct, not a language var
+                    );
 
-					$this->tabs->addSubTabTarget(
-						$this->plugin_object->txt('questions_results'), // text is also the subtab id
-						$this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI','ilExtendedTestStatisticsPageGUI'), 'showQuestionsOverview'),
-						array('showQuestionsOverview', 'showQuestionDetails'), 	// commands to be recognized for activation
-						'ilExtendedTestStatisticsPageGUI', 	// cmdClass to be recognized activation
-						'', 								// frame
-						false, 								// manual activation
-						true								// text is direct, not a language var
-					);
+                    $this->tabs->addSubTabTarget(
+                        $this->plugin_object->txt('questions_results'), // text is also the subtab id
+                        $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI','ilExtendedTestStatisticsPageGUI'), 'showQuestionsOverview'),
+                        array('showQuestionsOverview', 'showQuestionDetails'), 	// commands to be recognized for activation
+                        'ilExtendedTestStatisticsPageGUI', 	// cmdClass to be recognized activation
+                        '', 								// frame
+                        false, 								// manual activation
+                        true								// text is direct, not a language var
+                    );
 
-					// save the tabs for reuse on the plugin pages
-					// (these do not have the test gui as parent)
-                    $this->saveTabs('iltestevaluationgui');
-				}
+                    // save the tabs for reuse on the plugin pages
+                    // (these do not have the test gui as parent)
+                    $this->saveTabs('iltestparticipantsgui');
+                }
 
-				if (strtolower($this->ctrl->getCmdClass())  == 'ilextendedteststatisticspagegui')
-				{
+                if (strtolower($this->ctrl->getCmdClass()) == 'ilextendedteststatisticspagegui') {
                     // reuse the tabs that were saved from the test gui
-                    $this->restoreTabs('iltestevaluationgui');
+                    $this->restoreTabs('iltestparticipantsgui');
 
-					// this works because the tabs are rendered after the sub tabs
-					$this->tabs->activateTab('statistics');
-				}
-				break;
+                    // this works because the tabs are rendered after the sub tabs
+                    $this->tabs->activateTab('statistics');
+                }
+                break;
 
-			default:
-				break;
-		}
-	}
+            default:
+                break;
+        }
+    }
 
     /**
      * Save the tabs for reuse on the plugin pages
      * @param string $a_context context for which the tabs should be saved
      */
-    protected function saveTabs(string $a_context) : void
+    protected function saveTabs(string $a_context): void
     {
         $this->setArrayInSession($a_context, 'TabTarget', $this->tabs->target);
         $this->setArrayInSession($a_context, 'TabSubTarget', $this->tabs->sub_target);
@@ -98,7 +94,7 @@ class ilExtendedTestStatisticsUIHookGUI extends ilUIHookPluginGUI
      * Restore the tabs for reuse on the plugin pages
      * @param string $a_context context for which the tabs should be saved
      */
-    protected function restoreTabs(string $a_context) : void
+    protected function restoreTabs(string $a_context): void
     {
         // reuse the tabs that were saved from the parent gui
         if (!empty($target = $this->getArrayFromSession($a_context, 'TabTarget'))) {
@@ -109,17 +105,16 @@ class ilExtendedTestStatisticsUIHookGUI extends ilUIHookPluginGUI
         }
     }
 
-    protected function setArrayInSession(string $a_context, string $name, array $array) : void
+    protected function setArrayInSession(string $a_context, string $name, array $array): void
     {
         ilSession::set(__class__ . '.' . $a_context . '.' . $name, serialize($array));
     }
 
-    protected function getArrayFromSession(string $a_context, string $name) : ?array
+    protected function getArrayFromSession(string $a_context, string $name): ?array
     {
         try {
             return unserialize(ilSession::get(__class__ . '.' . $a_context . '.' . $name));
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }

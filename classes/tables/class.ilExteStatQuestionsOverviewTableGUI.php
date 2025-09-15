@@ -114,11 +114,6 @@ class ilExteStatQuestionsOverviewTableGUI extends ilExteStatTableGUI
                 'tooltip' => '',
                 'default' => false
             ),
-			'obligatory' => array(
-				'txt' => $this->lng->txt('obligatory'),
-				'tooltip' => '',
-				'default' => true
-			),
 			'assigned_count' => array(
                 'txt' => $this->plugin->txt('assigned_count'),
                 'tooltip' => $this->plugin->txt('assigned_count_description'),
@@ -149,7 +144,6 @@ class ilExteStatQuestionsOverviewTableGUI extends ilExteStatTableGUI
 		if ($this->statObj->getSourceData()->getTestType() != ilExteEvalBase::TEST_TYPE_FIXED)
 		{
 			unset($columns['order_position']);
-			unset($columns['obligatory']);
 		}
 
 		return $columns;
