@@ -84,22 +84,22 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion
             ilExteStatColumn::_create('index',$this->txt('index'), ilExteStatColumn::SORT_NUMBER),
 			ilExteStatColumn::_create('points',$this->txt('points'),ilExteStatColumn::SORT_NUMBER),
 			ilExteStatColumn::_create('count',$this->txt('count'),ilExteStatColumn::SORT_NUMBER, '', true),
+            ilExteStatColumn::_create('percent',$this->txt('percent'),ilExteStatColumn::SORT_NUMBER, $this->txt('percent_info'), false),
             ilExteStatColumn::_create('choice', $this->txt('choice'), ilExteStatColumn::SORT_TEXT)
         );
         $details->chartType = ilExteStatDetails::CHART_BARS;
         $details->chartLabelsColumn = 3;
 
         $option_count = array();
-        foreach ($options as $key => $option)
-        {
+        foreach ($options as $key => $option) {
             $option_count[$key] = 0;
         }
 
         /** @var ilExteStatSourceAnswer $answer */
-        foreach ($this->data->getAnswersForQuestion($a_question_id, true) as $answer)
-        {
+        $count_participants = count($this->data->getAllParticipants());
+        foreach ($this->data->getAnswersForQuestion($a_question_id, true) as $answer) {
             $result = $this->db->queryF(
-                "SELECT * FROM tst_solutions WHERE active_fi = %s AND pass = %s AND question_fi = %s",
+                "SELECT * FROM tst_solutions WHERE active_fi = %s AND pass = %s AND question_fi = %s AND authorized = 1",
                 array("integer", "integer", "integer"),
                 array($answer->active_id, $answer->pass, $a_question_id)
             );
@@ -109,16 +109,23 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion
                 if (isset($data["value1"]) && isset($options[$data["value1"]]))
                 {
                     $option_count[$data["value1"]]++;
+                    break;  // count option only once per participant
                 }
             }
         }
 
-        foreach ($options as $key => $option)
-        {
+
+        foreach ($options as $key => $option) {
+            $percent = 0;
+            if ($count_participants > 0) {
+                $percent = 100 * ($option_count[$key] / $count_participants);
+            }
+
            $details->rows[] = array(
                 'index' => ilExteStatValue::_create($option->getOrder(), ilExteStatValue::TYPE_NUMBER, 0),
 			    'points' => ilExteStatValue::_create($option->getPoints(), ilExteStatValue::TYPE_NUMBER, 2),
 			    'count' => ilExteStatValue::_create($option_count[$key], ilExteStatValue::TYPE_NUMBER, 0),
+                'percent' => ilExteStatValue::_create($percent, ilExteStatValue::TYPE_PERCENTAGE, 0),
                 'choice' => ilExteStatValue::_create($option->getAnswertext(), ilExteStatValue::TYPE_TEXT, 0)
             );
         }

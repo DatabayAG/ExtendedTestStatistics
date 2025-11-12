@@ -142,6 +142,8 @@ qst_choices_index#:#Index
 qst_choices_choice#:#Antwortoption
 qst_choices_points#:#Punkte
 qst_choices_count#:#Anzahl
+qst_choices_percent#:#Prozent Teilnehmer
+qst_choices_percent_info#:#Prozent aller Teilnehmer, die diese Option gewählt haben
 qst_choices_answer_options#:#Antwortoptionen
 not_for_fixed_test#:#Nicht für Tests mit fester Fragenauswahl verfügbar
 not_for_random_test#:#Nicht für Tests mit zufälliger Fragenauswahl verfügbar
