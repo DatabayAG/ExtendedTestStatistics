@@ -161,3 +161,5 @@ question_position#:#Position
 question_title#:#Question
 average_sign#:#Ø
 select_chart#:#Select Chart
+answer_frequency#:#Frequency of Answers
+answer_frequency_info#:#Percentage of participants who selected this option. The text of the answer option is added as a note. Correct answer options are written in bold. A distractor is written in red and bold if it was selected more often than a correct answer option for this question.

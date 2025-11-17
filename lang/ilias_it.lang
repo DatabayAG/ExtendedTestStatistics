@@ -161,3 +161,5 @@ question_position#:#Posizione
 question_title#:#Domanda
 average_sign#:#Ø
 select_chart#:#Selezionare il diagramma
+answer_frequency#:#Frequenza delle risposte
+answer_frequency_info#:#Percentuale dei partecipanti che hanno selezionato questa opzione. Il testo dell'opzione di risposta è aggiunto come nota. Le opzioni di risposta corrette sono scritte in grassetto. Un distrattore è scritto in rosso e in grassetto se è stato selezionato più spesso di un'opzione di risposta corretta per questa domanda.

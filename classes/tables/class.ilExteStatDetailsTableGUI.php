@@ -49,7 +49,7 @@ class ilExteStatDetailsTableGUI extends ilExteStatTableGUI
 			}
 			else
 			{
-				$title = $column->title;
+				$title = (string) $column->title;
 			}
             $this->addColumn($title, $column->sort ? 'sort_'.$column->name : '', '', false, '', $column->comment);
         }

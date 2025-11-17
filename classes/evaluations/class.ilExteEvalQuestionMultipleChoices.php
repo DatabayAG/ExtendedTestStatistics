@@ -4,7 +4,7 @@
 /**
  * Choice Evaluation
  */
-class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion
+class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion implements ilExteEvalQuestionOverview
 {
 	/**
 	 * evaluation provides a single value for the overview level
@@ -37,6 +37,12 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion
 	protected ?string $lang_prefix = 'qst_choices';
 
     protected ilDBInterface $db;
+
+    /**
+     * Details of all questions with allowed type, indexed by question_id
+     * @var array<int, ilExteStatDetails>
+     */
+    private ?array $allowed_details = null;
 
     /**
      * Constructor
@@ -114,7 +120,7 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion
             }
         }
 
-
+        $i = 1;
         foreach ($options as $key => $option) {
             $percent = 0;
             if ($count_participants > 0) {
@@ -122,7 +128,7 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion
             }
 
            $details->rows[] = array(
-                'index' => ilExteStatValue::_create($option->getOrder(), ilExteStatValue::TYPE_NUMBER, 0),
+                'index' => ilExteStatValue::_create($i++, ilExteStatValue::TYPE_NUMBER, 0),
 			    'points' => ilExteStatValue::_create($option->getPoints(), ilExteStatValue::TYPE_NUMBER, 2),
 			    'count' => ilExteStatValue::_create($option_count[$key], ilExteStatValue::TYPE_NUMBER, 0),
                 'percent' => ilExteStatValue::_create($percent, ilExteStatValue::TYPE_PERCENTAGE, 0),
@@ -131,5 +137,89 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion
         }
 
         return $details;
+    }
+
+    public function getOverviewSpanningHeader(): ?string
+    {
+        return $this->plugin->txt('answer_frequency');
+    }
+
+    /**
+     * Get additional columns fpr the questions overview table
+     * - as much as neeed for the question with the most answer options
+     * @return ilExteStatColumn[]
+     */
+    public function getOverviewColumns(): array
+    {
+        $columns = [];
+
+        $max = 0;
+        foreach ($this->getAllowedDetails() as $detail) {
+            $max = max($max, count($detail->rows));
+        }
+
+        $i = 1;
+        while ($i <= $max) {
+            $columns[] = ilExteStatColumn::_create((string) $i, (string) $i,ilExteStatColumn::SORT_NONE,
+                $this->plugin->txt('answer_frequency_info'));
+            $i++;
+        }
+
+        return $columns;
+    }
+
+    /**
+     * @return ilExteStatValue[]
+     */
+    public function getOverviewValues(int $question_id): array
+    {
+        $values = [];
+        $details = $this->getAllowedDetails()[$question_id] ?? new ilExteStatDetails();
+
+        // get the min count of answers for a correct answer option
+        $min_correct = null;
+        foreach ($details->rows as $row) {
+            if ($row['points']->value > 0) {
+                if ($min_correct === null) {
+                    $min_correct = $row['count']->value;
+                } else {
+                    $min_correct = min($min_correct, $row['count']->value);
+                }
+            }
+        };
+        $min_correct = (int) $min_correct;
+
+        /** @var ilExteStatValue[] $row */
+        foreach ($details->rows as $row) {
+            $value = ilExteStatValue::_create(
+                $row['percent']->value,
+                ilExteStatValue::TYPE_PERCENTAGE,
+                2,
+                $row['choice']->value
+                );
+
+            if ($row['points']->value > 0) {
+                $value->weight = ilExteStatValue::WEIGHT_STRONG;
+            }
+            elseif ($row['count']->value > $min_correct) {
+                $value->weight = ilExteStatValue::WEIGHT_STRONG;
+                $value->color = ilExteStatValue::COLOR_RED;
+            }
+            $values[] = $value;
+        }
+        return $values;
+    }
+
+    private function getAllowedDetails()
+    {
+        if ($this->allowed_details === null) {
+            $this->allowed_details = [];
+            foreach ($this->data->getAllQuestions() as $question) {
+                if (in_array($question->question_type, $this->allowed_question_types)) {
+                    $this->allowed_details[$question->question_id] = $this->getDetails($question->question_id);
+                }
+            }
+        }
+        return $this->allowed_details;
     }
 }

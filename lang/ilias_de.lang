@@ -178,3 +178,5 @@ question_position#:#Position
 question_title#:#Frage
 average_sign#:#Ø
 select_chart#:#Diagramm auswählen
+answer_frequency#:#Antworthäufigkeit
+answer_frequency_info#:#Prozentzahl der Teilnehmer, die diese Option gewählt haben. Der Text der Antwortoption ist als Notiz hinzugefügt. Korrekte Antwortoptionen sind fett geschrieben. Ein Distraktor ist rot und fett geschrieben, wenn er häufiger als eine korrekte Antwortoption diese Frage gewählt wurde.

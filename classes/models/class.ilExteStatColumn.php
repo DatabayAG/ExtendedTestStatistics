@@ -23,8 +23,9 @@ class ilExteStatColumn
 
 	/**
 	 * Title to be shown in the header
+     * @var string|int|null
 	 */
-	public ?string $title = null;
+	public mixed $title = null;
 
 
     /**
@@ -50,14 +51,14 @@ class ilExteStatColumn
      */
     public static function _create(
         string $a_name,
-        string $a_title = '',
+        mixed $a_title = null,
         string $a_sort = self::SORT_NONE,
         string $a_comment = '',
         bool $a_is_chart_data = false) : ilExteStatColumn
     {
         $column = new self;
         $column->name = $a_name;
-        $column->title = $a_title ? $a_title : $a_name;
+        $column->title = $a_title ?? $a_name;
         $column->sort = $a_sort;
         $column->comment = $a_comment;
         $column->isChartData = $a_is_chart_data;

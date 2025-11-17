@@ -123,13 +123,29 @@ class ilExteStatValueExcel
 			));
 		}
 
-		if ($value->uncertain)
-		{
-			$cell->getStyle()->applyFromArray(array(
-				'font' => array(
-					'italic' => true
-			)));
-		}
+        if ($value->uncertain) {
+            $cell->getStyle()->applyFromArray(array(
+                'font' => array(
+                    'italic' => true
+                )
+            ));
+        }
+
+        if ($value->weight === ilExteStatValue::WEIGHT_STRONG) {
+            $cell->getStyle()->applyFromArray(array(
+                'font' => array(
+                    'bold' => true
+                )
+            ));
+        }
+
+        if ($value->color !== ilExteStatValue::COLOR_BLACK) {
+            $cell->getStyle()->applyFromArray(array(
+                'font' => array(
+                    'color' => array('rgb' => $value->color),
+                )
+            ));
+        }
 	}
 
 	/**
@@ -147,8 +163,8 @@ class ilExteStatValueExcel
 	{
 		$comment = new Comment();
 		$richText = new RichText();
-		$extElement = new TextElement($text);
-		$richText->addText($extElement);
+		$textElement = new TextElement(ilUtil::secureString($text));
+		$richText->addText($textElement);
 		$comment->setText($richText);
 		$comment->setHeight('150pt');
 		$comment->setWidth('200pt');
