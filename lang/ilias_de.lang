@@ -180,3 +180,12 @@ average_sign#:#Ø
 select_chart#:#Diagramm auswählen
 answer_frequency#:#Antworthäufigkeit
 answer_frequency_info#:#Prozentzahl der Teilnehmer, die diese Option gewählt haben. Der Text der Antwortoption ist als Notiz hinzugefügt. Korrekte Antwortoptionen sind fett geschrieben. Ein Distraktor ist rot und fett geschrieben, wenn er häufiger als eine korrekte Antwortoption diese Frage gewählt wurde.
+qst_percent_groups_title_long#:#Gruppenantworten
+qst_percent_groups_title_short#:#Gruppen-Trennschärfe
+qst_percent_groups_description#:#Berechnet die Trennschärfe der Frage aus den  Antworten unter den besten und schlechtesten Teilnehmern im Test:\nTrennschärfe = ((H-L) / N) * 2; H = Summe richtiger Antworten der oberen Gruppe; L = Summe richtiger Antworten der unteren Gruppe; N = Anzahl aller zu diesen beiden Gruppen zählenden Studierenden
+qst_percent_groups_limit_title#:#Grenzwert
+qst_percent_groups_limit_description#:#Prozenzsatz der besten und schlechtesten Teilnehmer im Test für die Berechnung
+qst_percent_groups_high_percent#:#Obere %s%%
+qst_percent_groups_low_percent#:#Untere %s%%
+qst_percent_groups_high_percent_info#:#Prozentzahl der richtigen Antworten auf die Frage unter den %s%% besten Teilnehmern im Test.
+qst_percent_groups_low_percent_info#:#Prozentzahl der richtigen Antworten auf die Frage unter den %s%% schlechtesten Teilnehmern im Test.
