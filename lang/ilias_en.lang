@@ -163,3 +163,12 @@ average_sign#:#Ø
 select_chart#:#Select Chart
 answer_frequency#:#Frequency of Answers
 answer_frequency_info#:#Percentage of participants who selected this option. The text of the answer option is added as a note. Correct answer options are written in bold. A distractor is written in red and bold if it was selected more often than a correct answer option for this question.
+qst_percent_groups_title_long#:#Group Answers
+qst_percent_groups_title_short#:#Group Selectivity
+qst_percent_groups_description#:#Calculates the discriminatory power of the question from the answers among the best and worst participants in the test: discriminatory power = ((H-L) / N) * 2; H = sum of correct answers of the upper group; L = sum of correct answers of the lower group; N = number of all students belonging to these two groups
+qst_percent_groups_limit_title#:#Limit
+qst_percent_groups_limit_description#:#Percentage of the best and worst participants in the test for the calculation
+qst_percent_groups_high_percent#:#Upper %s%%
+qst_percent_groups_low_percent#:#Lower %s%%
+qst_percent_groups_high_percent_info#:#Percentage of correct answers to the question among the %s%% best participants in the test.
+qst_percent_groups_low_percent_info#:#Percentage of correct answers to the question among the %s%% worst participants in the test.

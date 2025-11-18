@@ -163,3 +163,12 @@ average_sign#:#Ø
 select_chart#:#Selezionare il diagramma
 answer_frequency#:#Frequenza delle risposte
 answer_frequency_info#:#Percentuale dei partecipanti che hanno selezionato questa opzione. Il testo dell'opzione di risposta è aggiunto come nota. Le opzioni di risposta corrette sono scritte in grassetto. Un distrattore è scritto in rosso e in grassetto se è stato selezionato più spesso di un'opzione di risposta corretta per questa domanda.
+qst_percent_groups_title_long#:#Risposte di gruppo
+qst_percent_groups_title_short#:#Selettività di gruppo
+qst_percent_groups_description#:#Calcola la selettività della domanda dalle  risposte dei partecipanti migliori e peggiori al test:\nSelettività = ((H-L) / N) * 2; H = somma delle risposte corrette del gruppo superiore; L = somma delle risposte corrette del gruppo inferiore; N = numero totale di studenti appartenenti a questi due gruppi
+qst_percent_groups_limit_title#:#Valore limite
+qst_percent_groups_limit_description#:#Percentuale dei partecipanti migliori e peggiori nel test per il calcolo
+qst_percent_groups_high_percent#:#Superiore %s%%
+qst_percent_groups_low_percent#:#Inferiore %s%%
+qst_percent_groups_high_percent_info#:#Percentuale di risposte corrette alla domanda tra i %s%% migliori partecipanti al test.
+qst_percent_groups_low_percent_info#:#Percentuale di risposte corrette alla domanda tra i %s%% partecipanti con i risultati peggiori nel test.
