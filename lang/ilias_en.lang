@@ -138,6 +138,7 @@ exp_type_excel_details#:#Microsoft Excel (with Details)
 exp_type_csv_test#:#Comma Separated Value (CSV), Only Test Overview
 exp_type_csv_questions#:#Comma Separated Value (CSV), Only Questions Overview
 tst_passed_average_max_points#:#Average maximum points of passed tests
+tst_passed_average_max_points_random_info#:#Average maximum score of all passed tests
 max_points_description#:#Maximum points reachable for this question
 export_written#:#The <a href="%s">export file</a> is written and can also be downloaded on the 'Export' tab.
 export_not_found#:#The export file was not found!

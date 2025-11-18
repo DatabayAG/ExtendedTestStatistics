@@ -469,11 +469,13 @@ class ilExteStatSourceData
 		$total_passed_reached = 0;
 		$total_passed_max = 0;
 		$total_passed_time = 0;
+        $total_max = 0;
 
 		/** @var ilTestEvaluationUserData[] $foundParticipants */
 		$foundParticipants = $this->eval->getParticipants();
 		foreach ($foundParticipants as $userdata)
 		{
+            $total_max = max($total_max, $userdata->getMaxpoints());
 			if ($userdata->getPassed())
 			{
 				$total_passed++;
@@ -497,7 +499,15 @@ class ilExteStatSourceData
 		$value = new ilExteStatValue();
 		$value->type = ilExteStatValue::TYPE_NUMBER;
 		$value->precision = 2;
-		$value->value = $average_passed_max;
+        if ($this->object->isFixedTest()) {
+            $value->value = $this->object->getFixedQuestionSetTotalPoints();
+        } elseif ($this->object->getQuestionSetConfig()->arePoolsWithHomogeneousScoredQuestionsRequired()) {
+            $value->value = $total_max;
+        } else {
+            $value->value = $average_passed_max;
+            $value->comment = $this->plugin->txt('tst_passed_average_max_points_random_info');
+        }
+
 		$this->basic_test_values['tst_eval_total_passed_average_max_points'] = $value;
 
 		// Average points of passed tests

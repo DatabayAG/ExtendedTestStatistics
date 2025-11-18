@@ -137,7 +137,8 @@ exp_type_excel_overviews#:#Microsoft Excel
 exp_type_excel_details#:#Microsoft Excel (con dettagli)
 exp_type_csv_test#:#Valore separato da virgole (CSV), solo panoramica del test
 exp_type_csv_questions#:#Valore separato da virgole (CSV), Panoramica solo domande
-tst_passed_average_max_points#:#Punti massimi medi dei test superati
+tst_passed_average_max_points#:#Punteggio massimo ottenibile
+tst_passed_average_max_points_random_info#:#Punteggio massimo medio di tutti i test superati
 max_points_description#:#Punti massimi raggiungibili per questa domanda
 export_written#:#Il <a href="%s">file di esportazione </a> viene scritto e può essere scaricato anche nella scheda "Esporta".
 export_not_found#:#Il file di esportazione non è stato trovato!
