@@ -41,7 +41,7 @@ class ilExteEvalQuestionPercentGroups extends ilExteEvalQuestion implements ilEx
     public function getAvailableParams(): array
     {
         return array(
-            ilExteStatParam::_create('limit', ilExteStatParam::TYPE_INT, 0),
+            ilExteStatParam::_create('limit', ilExteStatParam::TYPE_INT, 27),
         );
     }
 
