@@ -366,7 +366,8 @@ class ilExteStatExport
         // Single evaluation values
         foreach ($this->statObj->getEvaluations(
             ilExtendedTestStatistics::LEVEL_QUESTION,
-            ilExtendedTestStatistics::PROVIDES_VALUE) as $class => $evaluation) {
+            ilExtendedTestStatistics::PROVIDES_VALUE
+        ) as $class => $evaluation) {
             $header['Single:' . $class] = array(
                 'title' => $evaluation->getShortTitle(),
                 'description' => $evaluation->getDescription()
@@ -427,13 +428,13 @@ class ilExteStatExport
                     $coordinate = $letter . '2';
                 }
                 if (!empty($eval->getOverviewSpanningHeader())) {
-                   $cell = $worksheet->getCell(Coordinate::stringFromColumnIndex($span_first) . '1');
-                   $cell->setValueExplicit($eval->getOverviewSpanningHeader(), DataType::TYPE_STRING);
-                   $cell->getStyle()->applyFromArray($this->headerStyle);
-                   $cell->getStyle()->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
-                   $cell->getStyle()->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                   $worksheet->mergeCells(Coordinate::stringFromColumnIndex($span_first) . '1'
-                       . ':' . Coordinate::stringFromColumnIndex($span_last) . '1');
+                    $cell = $worksheet->getCell(Coordinate::stringFromColumnIndex($span_first) . '1');
+                    $cell->setValueExplicit($eval->getOverviewSpanningHeader(), DataType::TYPE_STRING);
+                    $cell->getStyle()->applyFromArray($this->headerStyle);
+                    $cell->getStyle()->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+                    $cell->getStyle()->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $worksheet->mergeCells(Coordinate::stringFromColumnIndex($span_first) . '1'
+                        . ':' . Coordinate::stringFromColumnIndex($span_last) . '1');
                 }
             }
         }

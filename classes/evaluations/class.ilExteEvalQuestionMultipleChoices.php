@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
@@ -6,35 +7,35 @@
  */
 class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion implements ilExteEvalQuestionOverview
 {
-	/**
-	 * evaluation provides a single value for the overview level
-	 */
-	protected bool $provides_value = false;
+    /**
+     * evaluation provides a single value for the overview level
+     */
+    protected bool $provides_value = false;
 
-	/**
-	 * evaluation provides data for a details screen
-	 */
-	protected bool $provides_details = true;
+    /**
+     * evaluation provides data for a details screen
+     */
+    protected bool $provides_details = true;
 
-	/**
-	 * evaluation provides a chart
-	 */
-	protected bool $provides_chart = true;
+    /**
+     * evaluation provides a chart
+     */
+    protected bool $provides_chart = true;
 
-	/**
-	 * list of allowed test types, e.g. array(self::TEST_TYPE_FIXED)
-	 */
-	protected array $allowed_test_types = array();
+    /**
+     * list of allowed test types, e.g. array(self::TEST_TYPE_FIXED)
+     */
+    protected array $allowed_test_types = array();
 
-	/**
-	 * list of question types, e.g. array('assSingleChoice', 'assMultipleChoice', ...)
-	 */
-	protected array $allowed_question_types = array('assSingleChoice', 'assMultipleChoice');
+    /**
+     * list of question types, e.g. array('assSingleChoice', 'assMultipleChoice', ...)
+     */
+    protected array $allowed_question_types = array('assSingleChoice', 'assMultipleChoice');
 
-	/**
-	 * specific prefix of language variables (lowercase classname is default)
-	 */
-	protected ?string $lang_prefix = 'qst_choices';
+    /**
+     * specific prefix of language variables (lowercase classname is default)
+     */
+    protected ?string $lang_prefix = 'qst_choices';
 
     protected ilDBInterface $db;
 
@@ -63,34 +64,33 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion implements il
      * - Please avoid instantiation of question objects
      * - Please try to cache question independent intermediate results
      */
-    protected function calculateValue(int $a_question_id) : ilExteStatValue
+    protected function calculateValue(int $a_question_id): ilExteStatValue
     {
-        return new ilExteStatValue;
-	}
+        return new ilExteStatValue();
+    }
 
 
     /**
      * Calculate the details question (to be overwritten)
      */
-    protected function calculateDetails(int $a_question_id) : ilExteStatDetails
-	{
+    protected function calculateDetails(int $a_question_id): ilExteStatDetails
+    {
         /** @var assMultipleChoice $question */
         $question = assQuestion::instantiateQuestion($a_question_id);
-		if (!is_object($question))
-		{
-			return new ilExteStatDetails();
-		}
+        if (!is_object($question)) {
+            return new ilExteStatDetails();
+        }
 
         /** @var ASS_AnswerMultipleResponse[] $options */
         $options = $question->getAvailableAnswerOptions();
 
         // answer details
         $details = new ilExteStatDetails();
-        $details->columns = array (
-            ilExteStatColumn::_create('index',$this->txt('index'), ilExteStatColumn::SORT_NUMBER),
-			ilExteStatColumn::_create('points',$this->txt('points'),ilExteStatColumn::SORT_NUMBER),
-			ilExteStatColumn::_create('count',$this->txt('count'),ilExteStatColumn::SORT_NUMBER, '', true),
-            ilExteStatColumn::_create('percent',$this->txt('percent'),ilExteStatColumn::SORT_NUMBER, $this->txt('percent_info'), false),
+        $details->columns = array(
+            ilExteStatColumn::_create('index', $this->txt('index'), ilExteStatColumn::SORT_NUMBER),
+            ilExteStatColumn::_create('points', $this->txt('points'), ilExteStatColumn::SORT_NUMBER),
+            ilExteStatColumn::_create('count', $this->txt('count'), ilExteStatColumn::SORT_NUMBER, '', true),
+            ilExteStatColumn::_create('percent', $this->txt('percent'), ilExteStatColumn::SORT_NUMBER, $this->txt('percent_info'), false),
             ilExteStatColumn::_create('choice', $this->txt('choice'), ilExteStatColumn::SORT_TEXT)
         );
         $details->chartType = ilExteStatDetails::CHART_BARS;
@@ -110,10 +110,8 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion implements il
                 array($answer->active_id, $answer->pass, $a_question_id)
             );
 
-            while ($data = $this->db->fetchAssoc($result))
-            {
-                if (isset($data["value1"]) && isset($options[$data["value1"]]))
-                {
+            while ($data = $this->db->fetchAssoc($result)) {
+                if (isset($data["value1"]) && isset($options[$data["value1"]])) {
                     $option_count[$data["value1"]]++;
                     break;  // count option only once per participant
                 }
@@ -127,13 +125,13 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion implements il
                 $percent = 100 * ($option_count[$key] / $count_participants);
             }
 
-           $details->rows[] = array(
-                'index' => ilExteStatValue::_create($i++, ilExteStatValue::TYPE_NUMBER, 0),
-			    'points' => ilExteStatValue::_create($option->getPoints(), ilExteStatValue::TYPE_NUMBER, 2),
-			    'count' => ilExteStatValue::_create($option_count[$key], ilExteStatValue::TYPE_NUMBER, 0),
-                'percent' => ilExteStatValue::_create($percent, ilExteStatValue::TYPE_PERCENTAGE, 0),
-                'choice' => ilExteStatValue::_create($option->getAnswertext(), ilExteStatValue::TYPE_TEXT, 0)
-            );
+            $details->rows[] = array(
+                 'index' => ilExteStatValue::_create($i++, ilExteStatValue::TYPE_NUMBER, 0),
+                 'points' => ilExteStatValue::_create($option->getPoints(), ilExteStatValue::TYPE_NUMBER, 2),
+                 'count' => ilExteStatValue::_create($option_count[$key], ilExteStatValue::TYPE_NUMBER, 0),
+                 'percent' => ilExteStatValue::_create($percent, ilExteStatValue::TYPE_PERCENTAGE, 0),
+                 'choice' => ilExteStatValue::_create($option->getAnswertext(), ilExteStatValue::TYPE_TEXT, 0)
+             );
         }
 
         return $details;
@@ -160,8 +158,12 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion implements il
 
         $i = 1;
         while ($i <= $max) {
-            $columns[] = ilExteStatColumn::_create((string) $i, (string) $i,ilExteStatColumn::SORT_NONE,
-                $this->plugin->txt('answer_frequency_info'));
+            $columns[] = ilExteStatColumn::_create(
+                (string) $i,
+                (string) $i,
+                ilExteStatColumn::SORT_NONE,
+                $this->plugin->txt('answer_frequency_info')
+            );
             $i++;
         }
 
@@ -196,12 +198,11 @@ class ilExteEvalQuestionMultipleChoices extends ilExteEvalQuestion implements il
                 ilExteStatValue::TYPE_PERCENTAGE,
                 2,
                 $row['choice']->value
-                );
+            );
 
             if ($row['points']->value > 0) {
                 $value->weight = ilExteStatValue::WEIGHT_STRONG;
-            }
-            elseif ($row['count']->value > $min_correct) {
+            } elseif ($row['count']->value > $min_correct) {
                 $value->weight = ilExteStatValue::WEIGHT_STRONG;
                 $value->color = ilExteStatValue::COLOR_RED;
             }

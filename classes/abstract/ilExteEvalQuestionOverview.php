@@ -7,7 +7,7 @@ interface ilExteEvalQuestionOverview
     /**
      * Get a header text that should span over all columns
      */
-    public function getOverviewSpanningHeader() : ?string;
+    public function getOverviewSpanningHeader(): ?string;
 
     /**
      * Get the columns that should be added to the overview

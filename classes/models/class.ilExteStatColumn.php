@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
@@ -6,12 +7,12 @@
  */
 class ilExteStatColumn
 {
-	/**
-	 * Defined column types
-	 */
-    const SORT_NONE = '';
-	const SORT_TEXT = 'text';
-	const SORT_NUMBER = 'number';
+    /**
+     * Defined column types
+     */
+    public const SORT_NONE = '';
+    public const SORT_TEXT = 'text';
+    public const SORT_NUMBER = 'number';
 
 
     /**
@@ -21,11 +22,11 @@ class ilExteStatColumn
     public string $name = '';
 
 
-	/**
-	 * Title to be shown in the header
+    /**
+     * Title to be shown in the header
      * @var string|int|null
-	 */
-	public mixed $title = null;
+     */
+    public mixed $title = null;
 
 
     /**
@@ -54,9 +55,9 @@ class ilExteStatColumn
         mixed $a_title = null,
         string $a_sort = self::SORT_NONE,
         string $a_comment = '',
-        bool $a_is_chart_data = false) : ilExteStatColumn
-    {
-        $column = new self;
+        bool $a_is_chart_data = false
+    ): ilExteStatColumn {
+        $column = new self();
         $column->name = $a_name;
         $column->title = $a_title ?? $a_name;
         $column->sort = $a_sort;

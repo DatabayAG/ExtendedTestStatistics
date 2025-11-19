@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
@@ -36,10 +37,10 @@ class ilExteEvalQuestionPercentPoints extends ilExteEvalQuestion
      */
     protected array $allowed_question_types = array();
 
-	/**
-	 * specific prefix of language variables (lowercase classname is default)
-	 */
-	protected ?string $lang_prefix = 'qst_percent_points';
+    /**
+     * specific prefix of language variables (lowercase classname is default)
+     */
+    protected ?string $lang_prefix = 'qst_percent_points';
 
 
     /**
@@ -50,18 +51,25 @@ class ilExteEvalQuestionPercentPoints extends ilExteEvalQuestion
      * - Please avoid instantiation of question objects
      * - Please try to cache question independent intermediate results
      */
-    protected function calculateValue(int $a_question_id) : ilExteStatValue
+    protected function calculateValue(int $a_question_id): ilExteStatValue
     {
         $questionObj = $this->data->getQuestion($a_question_id);
-        
+
         if ($questionObj->assigned_count == 0) {
-            return ilExteStatValue::_create(0, ilExteStatValue::TYPE_PERCENTAGE,
-                0, $this->txt('not_assigned'), ilExteStatValue::ALERT_UNKNOWN);
+            return ilExteStatValue::_create(
+                0,
+                ilExteStatValue::TYPE_PERCENTAGE,
+                0,
+                $this->txt('not_assigned'),
+                ilExteStatValue::ALERT_UNKNOWN
+            );
         }
 
         return ilExteStatValue::_create(
             $questionObj->average_percentage,
-            ilExteStatValue::TYPE_PERCENTAGE, 2);
+            ilExteStatValue::TYPE_PERCENTAGE,
+            2
+        );
     }
 
 

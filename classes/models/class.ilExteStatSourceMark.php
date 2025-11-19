@@ -14,8 +14,7 @@ class ilExteStatSourceMark
         bool $passed = false,
         string $short_name = '',
         string $official_name = ''
-    )
-    {
+    ) {
         $this->mark_id = $mark_id;
         $this->min_percent = $min_percent;
         $this->passed = $passed;

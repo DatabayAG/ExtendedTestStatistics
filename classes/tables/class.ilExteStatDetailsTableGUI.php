@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
@@ -12,8 +13,8 @@ class ilExteStatDetailsTableGUI extends ilExteStatTableGUI
     /**
      * ilExteStatDetailsTableGUI constructor.
      */
-	public function __construct(?object $a_parent_obj, string $a_parent_cmd)
-	{
+    public function __construct(?object $a_parent_obj, string $a_parent_cmd)
+    {
         parent::__construct($a_parent_obj, $a_parent_cmd);
 
         $this->setStyle('table', 'fullwidth');
@@ -41,29 +42,22 @@ class ilExteStatDetailsTableGUI extends ilExteStatTableGUI
         parent::__construct($this->parent_obj, $this->parent_cmd);
 
         //Columns
-        foreach ($this->details->columns as $column)
-        {
-        	if ($column->sort == ilExteStatColumn::SORT_NUMBER)
-			{
-				$title = "<span class='ilExteStatHeaderRight'>".$column->title."</span>";
-			}
-			else
-			{
-				$title = (string) $column->title;
-			}
-            $this->addColumn($title, $column->sort ? 'sort_'.$column->name : '', '', false, '', $column->comment);
+        foreach ($this->details->columns as $column) {
+            if ($column->sort == ilExteStatColumn::SORT_NUMBER) {
+                $title = "<span class='ilExteStatHeaderRight'>" . $column->title . "</span>";
+            } else {
+                $title = (string) $column->title;
+            }
+            $this->addColumn($title, $column->sort ? 'sort_' . $column->name : '', '', false, '', $column->comment);
         }
 
         // Row data
         $data = array();
-        foreach ($this->details->rows as $rownum => $values)
-        {
-            foreach ($this->details->columns as $column)
-            {
-                if (!empty($column->sort) && isset($values[$column->name]))
-                {
+        foreach ($this->details->rows as $rownum => $values) {
+            foreach ($this->details->columns as $column) {
+                if (!empty($column->sort) && isset($values[$column->name])) {
                     // add scalar value for sorting
-                    $values['sort_'.$column->name] = $values[$column->name]->value;
+                    $values['sort_' . $column->name] = $values[$column->name]->value;
                 }
             }
             $data[] = $values;
@@ -77,16 +71,11 @@ class ilExteStatDetailsTableGUI extends ilExteStatTableGUI
      */
     public function numericOrdering(string $a_field): bool
     {
-        foreach ($this->details->columns as $column)
-        {
-            if ($column->name == $a_field)
-            {
-                if ($column->sort == ilExteStatColumn::SORT_NUMBER)
-                {
+        foreach ($this->details->columns as $column) {
+            if ($column->name == $a_field) {
+                if ($column->sort == ilExteStatColumn::SORT_NUMBER) {
                     return true;
-                }
-                else
-                {
+                } else {
                     return false;
                 }
             }
@@ -96,18 +85,14 @@ class ilExteStatDetailsTableGUI extends ilExteStatTableGUI
 
 
     /**
-	 * fill row 
-	 */
+     * fill row
+     */
     protected function fillRow(array $a_set): void
-	{
-        foreach ($this->details->columns as $column)
-        {
-            if (isset($a_set[$column->name]))
-            {
+    {
+        foreach ($this->details->columns as $column) {
+            if (isset($a_set[$column->name])) {
                 $content = $this->valueGUI->getHTML($a_set[$column->name]);
-            }
-            else
-            {
+            } else {
                 $content = '';
             }
 
@@ -115,5 +100,5 @@ class ilExteStatDetailsTableGUI extends ilExteStatTableGUI
             $this->tpl->setVariable('CONTENT', $content);
             $this->tpl->parseCurrentBlock();
         }
-	}
+    }
 }
