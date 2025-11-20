@@ -146,15 +146,44 @@ class ilExteEvalQuestionPercentGroups extends ilExteEvalQuestion implements ilEx
 
     private function initGroups(): void
     {
+        $this->high_active_ids = [];
+        $this->low_active_ids = [];
+
         $participants = $this->data->getAllParticipants();
+
+        // Number of required participants per group
+        // It should be rounded up if the required percentage of participants is not integer
+        $size = (int) ceil((count($participants) * $this->getParam('limit') / 100));
+
+        // sort by ascending reached points
         usort($participants, fn($p1, $p2) => $p1->current_reached_points <=> $p2->current_reached_points);
 
-        $num = (int) (count($participants) * $this->getParam('limit') / 100);
+        // add participants to the group of worst participants
+        // add at least the required number
+        // add all that have the same reached points as the best of this group
+        $points = null;
+        foreach ($participants as $p) {
+            if (count($this->low_active_ids) === $size && ($points === null || $p->current_reached_points > $points)) {
+                break;
+            }
+            $this->low_active_ids[] = $p->active_id;
+            $points = $p->current_reached_points;
+        }
 
-        $low = array_slice($participants, 0, $num);
-        $high = array_slice($participants, -$num, $num);
+        // now sort by descending reached points
+        $participants = array_reverse($participants);
 
-        $this->high_active_ids = array_map(fn($p) => $p->active_id, $high);
-        $this->low_active_ids = array_map(fn($p) => $p->active_id, $low);
+        // add participants to the group of best participants
+        // add at least the required number
+        // add all that have the same reached points as the worst of this group
+        $points = null;
+        foreach ($participants as $p) {
+            if (count($this->high_active_ids) === $size && ($points === null || $p->current_reached_points < $points)) {
+                break;
+            }
+            $this->high_active_ids[] = $p->active_id;
+            $points = $p->current_reached_points;
+        }
     }
+
 }
