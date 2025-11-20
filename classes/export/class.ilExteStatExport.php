@@ -8,14 +8,9 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use ILIAS\ResourceStorage\Services as ResourceStorage;
 use ILIAS\Filesystem\Stream\Streams;
-use ILIAS\Test\ExportImport\DBRepository as TestExportImportRepository;
-use ILIAS\Test\ExportImport\Types as ExportImportTypes;
-use ILIAS\Test\TestDIC;
 use ILIAS\ResourceStorage\Identification\ResourceIdentification;
-use ILIAS\ResourceStorage\Resource\ResourceType;
 use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
 use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
 use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
@@ -166,7 +161,7 @@ class ilExteStatExport
             case self::TYPE_EXCEL:
                 $suffix = '.xlsx';
                 $writer = IOFactory::createWriter($excelObj, 'Xlsx');
-                $writer->save($path . '/' . $name . $suffix);
+                $writer->save($path . '/' . $name . $suffix, IWriter::SAVE_WITH_CHARTS);
                 break;
 
             case self::TYPE_CSV:
@@ -550,7 +545,7 @@ class ilExteStatExport
             /**@var  ilExteStatValue $value */
             foreach ($coldata as $name => $value) {
                 if (isset($mapping[$name])) {
-                    $coordinate = $mapping[$name] .  $row;
+                    $coordinate = $mapping[$name] . $row;
                     $cell = $worksheet->getCell($coordinate);
                     $this->valView->writeInCell($cell, $value);
                     if (!empty($value->comment)) {
@@ -570,7 +565,9 @@ class ilExteStatExport
                 2,
                 count($details->rows),
             );
-        }$worksheet->setComments($comments);
+        }
+
+        $worksheet->setComments($comments);
         $worksheet->freezePane('A2');
         $this->adjustSizes($worksheet);
     }
