@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
@@ -36,10 +37,10 @@ class ilExteEvalQuestionPercentCorrect extends ilExteEvalQuestion
      */
     protected array $allowed_question_types = array();
 
-	/**
-	 * specific prefix of language variables (lowercase classname is default)
-	 */
-	protected ?string $lang_prefix = 'qst_correct';
+    /**
+     * specific prefix of language variables (lowercase classname is default)
+     */
+    protected ?string $lang_prefix = 'qst_correct';
 
 
     /**
@@ -53,15 +54,20 @@ class ilExteEvalQuestionPercentCorrect extends ilExteEvalQuestion
      * @param integer $a_question_id
      * @return ilExteStatValue
      */
-    protected function calculateValue(int $a_question_id) : ilExteStatValue
+    protected function calculateValue(int $a_question_id): ilExteStatValue
     {
         $questionObj = $this->data->getQuestion($a_question_id);
-        
+
         if ($questionObj->assigned_count == 0) {
-            return ilExteStatValue::_create(0, ilExteStatValue::TYPE_PERCENTAGE,
-                0, $this->txt('not_assigned'), ilExteStatValue::ALERT_UNKNOWN);
+            return ilExteStatValue::_create(
+                0,
+                ilExteStatValue::TYPE_PERCENTAGE,
+                0,
+                $this->txt('not_assigned'),
+                ilExteStatValue::ALERT_UNKNOWN
+            );
         }
-        
+
         $correct_count = 0;
         foreach ($this->data->getAnswersForQuestion($a_question_id) as $answerObj) {
             if ($answerObj->reached_points >= $questionObj->maximum_points) {
@@ -70,8 +76,10 @@ class ilExteEvalQuestionPercentCorrect extends ilExteEvalQuestion
         }
 
         return ilExteStatValue::_create(
-            100 * $correct_count / $questionObj->assigned_count, 
-            ilExteStatValue::TYPE_PERCENTAGE, 2);
+            100 * $correct_count / $questionObj->assigned_count,
+            ilExteStatValue::TYPE_PERCENTAGE,
+            2
+        );
     }
 
 }

@@ -9,7 +9,7 @@ class ilExtendedTestStatisticLanguage extends ilPluginLanguage
      */
     public function updateLanguages(?array $a_lang_keys = null): void
     {
-         // get the keys of all installed languages if keys are not provided
+        // get the keys of all installed languages if keys are not provided
         if (!isset($a_lang_keys)) {
             $a_lang_keys = [];
             foreach (ilObjLanguage::getInstalledLanguages() as $langObj) {
@@ -70,7 +70,7 @@ class ilExtendedTestStatisticLanguage extends ilPluginLanguage
     /**
      * Get the lang files of hooked evaluations (slot simulation)
      */
-    protected function getHookedLangFiles() : array
+    protected function getHookedLangFiles(): array
     {
         $langs = [];
         $lang_files = glob(__DIR__ . '/../addons/*/lang/ilias_*.lang');

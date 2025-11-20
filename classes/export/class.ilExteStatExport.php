@@ -16,6 +16,15 @@ use ILIAS\Test\ExportImport\Types as ExportImportTypes;
 use ILIAS\Test\TestDIC;
 use ILIAS\ResourceStorage\Identification\ResourceIdentification;
 use ILIAS\ResourceStorage\Resource\ResourceType;
+use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
+use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
+use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
+use PhpOffice\PhpSpreadsheet\Chart\Chart;
+use PhpOffice\PhpSpreadsheet\Chart\Title;
+use PhpOffice\PhpSpreadsheet\Chart\Legend as ChartLegend;
+use PhpOffice\PhpSpreadsheet\Writer\IWriter;
+use PhpOffice\PhpSpreadsheet\Chart\Layout;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 /**
  * Extended Test Statistics Export
@@ -367,46 +376,99 @@ class ilExteStatExport
      */
     protected function fillQuestionsOverview(Worksheet $worksheet)
     {
-        $header = $this->statObj->getSourceData()->getBasicQuestionValuesList();
-
+        $comments = array();
+        $mapping = array();
         /** @var  ilExteEvalQuestion $evaluation */
         $evaluations = array();
+
+        // Basic question columns
+        $header = $this->statObj->getSourceData()->getBasicQuestionValuesList();
+
+        // Single evaluation values
         foreach ($this->statObj->getEvaluations(
             ilExtendedTestStatistics::LEVEL_QUESTION,
             ilExtendedTestStatistics::PROVIDES_VALUE
         ) as $class => $evaluation) {
-            $header[$class] = array(
+            $header['Single:' . $class] = array(
                 'title' => $evaluation->getShortTitle(),
-                'description' => $evaluation->getDescription(),
+                'description' => $evaluation->getDescription()
             );
-            $evaluations[$class] = $evaluation;
+            $evaluations['Single:' . $class] = $evaluation;
         }
 
-        $comments = array();
-        $mapping = array();
+        // multi evaluation columns
+        foreach ($this->statObj->getEvaluations(ilExtendedTestStatistics::LEVEL_QUESTION) as $class => $evaluation) {
+            if ($evaluation instanceof ilExteEvalQuestionOverview) {
+                $header['Multi:' . $class] = array(
+                    'title' => $evaluation->getOverviewSpanningHeader(),
+                    'description' => '',
+                    'multi' => true
+                );
+                $evaluations['Multi:' . $class] = $evaluation;
+            }
+        }
+
+        // Add header cells
+
         $col = 1;
         foreach ($header as $name => $def) {
             if (!empty($def['test_types']) && !in_array($this->statObj->getSourceData()->getTestType(), $def['test_types'])) {
                 continue;
             }
             $letter = Coordinate::stringFromColumnIndex($col);
+            $coordinate = $letter . '2';
             $mapping[$name] = $letter;
-            $coordinate = $letter . '1';
-            $cell = $worksheet->getCell($coordinate);
-            $cell->setValueExplicit($def['title'], DataType::TYPE_STRING);
-            $cell->getStyle()->applyFromArray($this->headerStyle);
-            if (!empty($def['description'])) {
-                $comments[$coordinate] = ilExteStatValueExcel::_createComment((string) $def['description']);
+
+            if (!($def['multi'] ?? false)) {
+                // basic question value or single value from an evaluation
+                $cell = $worksheet->getCell($coordinate);
+                $cell->setValueExplicit($def['title'], DataType::TYPE_STRING);
+                $cell->getStyle()->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+                $cell->getStyle()->applyFromArray($this->headerStyle);
+                if (!empty($def['description'])) {
+                    $comments[$coordinate] = ilExteStatValueExcel::_createComment((string) $def['description']);
+                }
+                $col++;
+            } else {
+                // multi columns provided by an evaluation
+                /** @var ilExteEvalQuestionOverview $eval */
+                $eval = $evaluations[$name];
+                $span_first = $col;
+                $span_last = $col;
+                foreach ($eval->getOverviewColumns() as $column) {
+                    $span_last = $col;
+                    $cell = $worksheet->getCell($coordinate);
+                    $cell->getStyle()->getNumberFormat()->setFormatCode(is_numeric($column->title) ? NumberFormat::FORMAT_NUMBER : NumberFormat::FORMAT_TEXT);
+                    $cell->setValueExplicit($column->title, is_numeric($column->title) ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING);
+                    $cell->getStyle()->applyFromArray($this->headerStyle);
+                    if (!empty($column->comment)) {
+                        $comments[$coordinate] = ilExteStatValueExcel::_createComment($column->comment);
+                    }
+                    $col++;
+                    $letter = Coordinate::stringFromColumnIndex($col);
+                    $coordinate = $letter . '2';
+                }
+                if (!empty($eval->getOverviewSpanningHeader())) {
+                    $cell = $worksheet->getCell(Coordinate::stringFromColumnIndex($span_first) . '1');
+                    $cell->setValueExplicit($eval->getOverviewSpanningHeader(), DataType::TYPE_STRING);
+                    $cell->getStyle()->applyFromArray($this->headerStyle);
+                    $cell->getStyle()->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+                    $cell->getStyle()->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $worksheet->mergeCells(Coordinate::stringFromColumnIndex($span_first) . '1'
+                        . ':' . Coordinate::stringFromColumnIndex($span_last) . '1');
+                }
             }
-            $col++;
         }
 
-        $row = 2;
+        // Add value rows
+
+        $row = 3;
         foreach ($this->statObj->getSourceData()->getBasicQuestionValues() as $question_id => $values) {
+            // Basic question values
             /**@var  ilExteStatValue $value */
             foreach ($values as $id => $value) {
                 if (isset($mapping[$id])) {
-                    $coordinate = $mapping[$id] . (string) $row;
+                    $coordinate = $mapping[$id] . $row;
                     $cell = $worksheet->getCell($coordinate);
                     $this->valView->writeInCell($cell, $value);
                     if (!empty($value->comment)) {
@@ -416,14 +478,29 @@ class ilExteStatExport
             }
 
             /** @var  ilExteEvalQuestion $evaluation */
-            foreach ($evaluations as $class => $evaluation) {
-                if (isset($mapping[$class])) {
-                    $coordinate = $mapping[$class] . (string) $row;
+            foreach ($evaluations as $name => $evaluation) {
+                if (!isset($header[$name])) {
+                    continue;
+                } elseif (!($header[$name]['multi'] ?? false)) {
+                    // single evaluation value
+                    $coordinate = $mapping[$name] . $row;
                     $cell = $worksheet->getCell($coordinate);
                     $value = $evaluation->getValue($question_id);
                     $this->valView->writeInCell($cell, $value);
                     if (!empty($value->comment)) {
                         $comments[$coordinate] = $this->valView->getComment($value);
+                    }
+                } else {
+                    // multi evaluation columns
+                    $col = Coordinate::columnIndexFromString($mapping[$name]);
+                    foreach ($evaluation->getOverviewValues($question_id) as $value) {
+                        $coordinate = Coordinate::stringFromColumnIndex($col) . $row;
+                        $cell = $worksheet->getCell($coordinate);
+                        $this->valView->writeInCell($cell, $value);
+                        if (!empty($value->comment)) {
+                            $comments[$coordinate] = $this->valView->getComment($value);
+                        }
+                        $col++;
                     }
                 }
             }
@@ -433,7 +510,7 @@ class ilExteStatExport
 
         $worksheet->setTitle($this->plugin->txt('questions_results'));
         $worksheet->setComments($comments);
-        $worksheet->freezePane('A2');
+        $worksheet->freezePane('A3');
         $this->adjustSizes($worksheet, range('A', 'C'));
     }
 
@@ -463,7 +540,7 @@ class ilExteStatExport
             $cell->setValueExplicit($column->title, DataType::TYPE_STRING);
             $cell->getStyle()->applyFromArray($this->headerStyle);
             if (!empty($column->comment)) {
-                $comments[$coordinate] = ilExteStatValueExcel::_createComment((string) $column->comment);
+                $comments[$coordinate] = ilExteStatValueExcel::_createComment($column->comment);
             }
             $col++;
         }
@@ -473,7 +550,7 @@ class ilExteStatExport
             /**@var  ilExteStatValue $value */
             foreach ($coldata as $name => $value) {
                 if (isset($mapping[$name])) {
-                    $coordinate = $mapping[$name] . (string) $row;
+                    $coordinate = $mapping[$name] .  $row;
                     $cell = $worksheet->getCell($coordinate);
                     $this->valView->writeInCell($cell, $value);
                     if (!empty($value->comment)) {
@@ -484,9 +561,158 @@ class ilExteStatExport
             $row++;
         }
 
-        $worksheet->setComments($comments);
+        if ($chart = $evaluation->getExcelChartDefinition()) {
+            $this->addChart(
+                $worksheet,
+                $chart->getTitle(),
+                $mapping[$chart->getXColumn()] ?? 'A',
+                $mapping[$chart->getYColumn()] ?? 'B',
+                2,
+                count($details->rows),
+            );
+        }$worksheet->setComments($comments);
         $worksheet->freezePane('A2');
         $this->adjustSizes($worksheet);
+    }
+
+    protected function addChart(Worksheet $sheet, string $title, string $col_x, string $col_y, int $start_row, int $rows)
+    {
+        $x_range = $sheet->getTitle() . '!' . $col_x . $start_row . ':' . $col_x . ($start_row + $rows - 1);
+        $y_range = $sheet->getTitle() . '!' . $col_y . $start_row . ':' . $col_y . ($start_row + $rows - 1);
+
+        $x_values = [
+            new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, $x_range, null, $rows)
+        ];
+
+        $y_values = [
+             new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, $y_range, null, $rows),
+         ];
+
+        $series = new DataSeries(
+            DataSeries::TYPE_BARCHART,
+            null,
+            range(0, count($y_values) - 1),
+            [],
+            $x_values,
+            $y_values
+        );
+
+        $layout = new Layout();
+        $layout->setShowVal(true);
+
+        $plotArea = new PlotArea($layout, [$series]);
+
+        // Create the chart
+        $chart = new Chart(
+            'Chart ' . $sheet->getTitle(),
+            new Title($title),
+            null,
+            new PlotArea($layout, [$series]),
+            true,
+            DataSeries::EMPTY_AS_GAP,
+        );
+
+        // Set the position where the chart should appear in the worksheet
+        $chart->setTopLeftPosition('A' . ($rows + 5));
+        $chart->setBottomRightPosition('H' . ($rows + 35));
+
+        // Add the chart to the worksheet
+        $sheet->addChart($chart);
+    }
+
+    protected function addSampleChart(Spreadsheet $excelObj)
+    {
+        $worksheet = $excelObj->createSheet();
+        $worksheet->setTitle('Sample');
+
+        $worksheet->fromArray(
+            [
+                ['', 2010, 2011, 2012],
+                ['Q1', 12, 15, 21],
+                ['Q2', 56, 73, 86],
+                ['Q3', 52, 61, 69],
+                ['Q4', 30, 32, 0],
+            ]
+        );
+
+        // Custom colors for dataSeries (gray, blue, red, orange)
+        $colors = [
+            'cccccc', '00abb8', 'b8292f', 'eb8500',
+        ];
+
+        // Set the Labels for each data series we want to plot
+        //     Datatype
+        //     Cell reference for data
+        //     Format Code
+        //     Number of datapoints in series
+        //     Data values
+        //     Data Marker
+        $dataSeriesLabels = [
+            new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Sample!$B$1', null, 1), // 2010
+        ];
+        // Set the X-Axis Labels
+        //     Datatype
+        //     Cell reference for data
+        //     Format Code
+        //     Number of datapoints in series
+        //     Data values
+        //     Data Marker
+        $xAxisTickValues = [
+            new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Sample!$A$2:$A$5', null, 4), // Q1 to Q4
+        ];
+
+        // Set the Data values for each data series we want to plot
+        //     Datatype
+        //     Cell reference for data
+        //     Format Code
+        //     Number of datapoints in series
+        //     Data values
+        //     Data Marker
+        $dataSeriesValues = [
+            new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Sample!$B$2:$B$5', null, 4, [], null, $colors),
+        ];
+
+        // Build the dataseries
+        $series = new DataSeries(
+            DataSeries::TYPE_BARCHART, // plotType
+            null, // plotGrouping
+            range(0, count($dataSeriesValues) - 1), // plotOrder
+            $dataSeriesLabels, // plotLabel
+            $xAxisTickValues, // plotCategory
+            $dataSeriesValues        // plotValues
+        );
+
+        // Set up a layout object for the Pie chart
+        $layout = new Layout();
+        $layout->setShowVal(true);
+        $layout->setShowPercent(true);
+
+        // Set the series in the plot area
+        $plotArea = new PlotArea($layout, [$series]);
+        // Set the chart legend
+        $legend = new ChartLegend(ChartLegend::POSITION_RIGHT, null, false);
+
+        $title = new Title('Notenspiegel');
+        $yAxisLabel = new Title('Value');
+
+        // Create the chart
+        $chart = new Chart(
+            'chart1', // name
+            $title, // title
+            $legend, //$legend, // legend
+            $plotArea, // plotArea
+            true, // plotVisibleOnly
+            DataSeries::EMPTY_AS_GAP, // displayBlanksAs
+            null, // xAxisLabel
+            null, // $yAxisLabel  // yAxisLabel
+        );
+
+        // Set the position where the chart should appear in the worksheet
+        $chart->setTopLeftPosition('A10');
+        $chart->setBottomRightPosition('H30');
+
+        // Add the chart to the worksheet
+        $worksheet->addChart($chart);
     }
 
 
@@ -562,7 +788,7 @@ class ilExteStatExport
             $cell->setValueExplicit($column->title, DataType::TYPE_STRING);
             $cell->getStyle()->applyFromArray($this->headerStyle);
             if (!empty($column->comment)) {
-                $comments[$coordinate] = ilExteStatValueExcel::_createComment((string) $column->comment);
+                $comments[$coordinate] = ilExteStatValueExcel::_createComment($column->comment);
             }
         }
 
@@ -577,7 +803,7 @@ class ilExteStatExport
      */
     protected function adjustSizes(worksheet $worksheet, ?array $range = null)
     {
-        $range = isset($range) ? $range : range('A', $worksheet->getHighestColumn());
+        $range = $range ?? range('A', $worksheet->getHighestColumn());
         foreach ($range as $columnID) {
             $worksheet->getColumnDimension($columnID)->setAutoSize(true);
         }

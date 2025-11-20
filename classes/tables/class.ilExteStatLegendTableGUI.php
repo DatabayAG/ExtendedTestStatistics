@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
@@ -6,14 +7,13 @@
  */
 class ilExteStatLegendTableGUI extends ilExteStatTableGUI
 {
-
     /**
      * Constructor
      * @param object    $a_parent_obj
      * @param string    $a_parent_cmd
      */
-	public function __construct($a_parent_obj, $a_parent_cmd)
-	{
+    public function __construct($a_parent_obj, $a_parent_cmd)
+    {
         parent::__construct($a_parent_obj, $a_parent_cmd);
 
         $this->setStyle('table', 'fullwidth');
@@ -36,11 +36,11 @@ class ilExteStatLegendTableGUI extends ilExteStatTableGUI
     }
 
     /**
-	 * fill row 
-	 */
+     * fill row
+     */
     protected function fillRow(array $a_set): void
-	{
+    {
         $this->tpl->setVariable('VALUE', $this->valueGUI->getHTML($a_set['value']));
         $this->tpl->setVariable('DESCRIPTION', $a_set['description']);
-	}
+    }
 }

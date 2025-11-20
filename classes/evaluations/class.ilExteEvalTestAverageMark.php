@@ -1,4 +1,5 @@
 <?php
+
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
@@ -9,35 +10,35 @@ class ilExteEvalTestAverageMark extends ilExteEvalTest
     public const NUMBERS_ABSOLUTE = 'absolute';
     public const NUMBERS_RELATIVE = 'relative';
 
-	/**
-	 * evaluation provides a single value for the overview level
-	 */
-	protected bool $provides_value = true;
+    /**
+     * evaluation provides a single value for the overview level
+     */
+    protected bool $provides_value = true;
 
-	/**
-	 * evaluation provides data for a details screen
-	 */
-	protected bool $provides_details = true;
+    /**
+     * evaluation provides data for a details screen
+     */
+    protected bool $provides_details = true;
 
     /**
      * evaluation provides a chart
      */
-    protected bool $provides_chart = false;
+    protected bool $provides_chart = true;
 
     /**
-	 * list of allowed test types, e.g. array(self::TEST_TYPE_FIXED)
-	 */
-	protected array $allowed_test_types = array();
+     * list of allowed test types, e.g. array(self::TEST_TYPE_FIXED)
+     */
+    protected array $allowed_test_types = array();
 
-	/**
-	 * list of question types, e.g. array('assSingleChoice', 'assMultipleChoice', ...)
-	 */
-	protected array $allowed_question_types = array();
+    /**
+     * list of question types, e.g. array('assSingleChoice', 'assMultipleChoice', ...)
+     */
+    protected array $allowed_question_types = array();
 
-	/**
-	 * specific prefix of language variables (lowercase classname is default)
-	 */
-	protected ?string $lang_prefix = 'tst_avg_mark';
+    /**
+     * specific prefix of language variables (lowercase classname is default)
+     */
+    protected ?string $lang_prefix = 'tst_avg_mark';
 
 
     /**
@@ -55,7 +56,7 @@ class ilExteEvalTestAverageMark extends ilExteEvalTest
     /**
      * Get a title for the details screen
      */
-    public function getDetailsTitle() :string
+    public function getDetailsTitle(): string
     {
         return $this->txt('details_title');
     }
@@ -64,7 +65,7 @@ class ilExteEvalTestAverageMark extends ilExteEvalTest
     /**
      * Get a description for the details screen
      */
-    public function getDetailsDescription() :string
+    public function getDetailsDescription(): string
     {
         return $this->txt('details_description');
     }
@@ -74,7 +75,7 @@ class ilExteEvalTestAverageMark extends ilExteEvalTest
      * Calculate and get the single value for a test
      * gets the grade level for the average percentage reached by all participants
      */
-    protected function calculateValue() : ilExteStatValue
+    protected function calculateValue(): ilExteStatValue
     {
         $sum = 0;
         $count = 0;
@@ -99,25 +100,25 @@ class ilExteEvalTestAverageMark extends ilExteEvalTest
     /**
      * Calculate details for a test identified by a key
      */
-    protected function calculateDetails() : ilExteStatDetails
+    protected function calculateDetails(): ilExteStatDetails
     {
-        return $this->calculateDetailsByKey(self::NUMBERS_RELATIVE);
+        return $this->calculateDetailsByKey(self::NUMBERS_ABSOLUTE);
     }
 
     /**
      * Calculate details for a test identified by a key
      */
-    protected function calculateDetailsByKey(string $key) : ilExteStatDetails
+    protected function calculateDetailsByKey(string $key): ilExteStatDetails
     {
         $unknown_value = ilExteStatValue::_create($this->txt('undefined'), ilExteStatValue::TYPE_ALERT, 0, '', ilExteStatValue::ALERT_UNKNOWN);
 
         $details = new ilExteStatDetails();
-        $details->columns = array (
-            0 => ilExteStatColumn::_create( 'short_name', $this->txt('short_name'), ilExteStatColumn::SORT_TEXT),
-            1 => ilExteStatColumn::_create('official_name',$this->txt('official_name'),ilExteStatColumn::SORT_TEXT),
-            2 => ilExteStatColumn::_create('min_percent',$this->txt('min_percent'),ilExteStatColumn::SORT_NUMBER),
-            3 => ilExteStatColumn::_create('participants_count',$this->txt('participants_count'),ilExteStatColumn::SORT_NUMBER, '', $key == self::NUMBERS_ABSOLUTE),
-            4 => ilExteStatColumn::_create('participants_percent',$this->txt('participants_percent'),ilExteStatColumn::SORT_NUMBER, '', $key == self::NUMBERS_RELATIVE)
+        $details->columns = array(
+            0 => ilExteStatColumn::_create('short_name', $this->txt('short_name'), ilExteStatColumn::SORT_TEXT),
+            1 => ilExteStatColumn::_create('official_name', $this->txt('official_name'), ilExteStatColumn::SORT_TEXT),
+            2 => ilExteStatColumn::_create('min_percent', $this->txt('min_percent'), ilExteStatColumn::SORT_NUMBER),
+            3 => ilExteStatColumn::_create('participants_count', $this->txt('participants_count'), ilExteStatColumn::SORT_NUMBER, '', $key == self::NUMBERS_ABSOLUTE),
+            4 => ilExteStatColumn::_create('participants_percent', $this->txt('participants_percent'), ilExteStatColumn::SORT_NUMBER, '', $key == self::NUMBERS_RELATIVE)
         );
 
         $total = 0;
@@ -163,11 +164,22 @@ class ilExteEvalTestAverageMark extends ilExteEvalTest
         return $details;
     }
 
+    /**
+     * Get the definition of an excel chart that should be included on a details page
+     */
+    public function getExcelChartDefinition(): ?ilExteStatExcelChart
+    {
+        return new ilExteStatExcelChart(
+            $this->getDetailsTitle(),
+            'short_name',
+            'participants_count'
+        );
+    }
 
     /**
      * Get the chart created by this evaluation
      */
-    public function getChart(?string $key = null) : ilChart
+    public function getChart(?string $key = self::NUMBERS_ABSOLUTE): ilChart
     {
         $details = clone $this->calculateDetailsByKey($key);
         $details->chartType = ilExteStatDetails::CHART_BARS;
@@ -214,21 +226,18 @@ class ilExteEvalTestAverageMark extends ilExteEvalTest
 
         if ($temp <= 10) {
             $steps = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        }
-        elseif ($temp <= 20) {
+        } elseif ($temp <= 20) {
             $steps = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
-        }
-        elseif ($temp <= 50) {
+        } elseif ($temp <= 50) {
             $steps = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
-        }
-        else {
+        } else {
             $steps = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
         }
 
         $values = [];
         foreach ($steps as $step) {
             $stepval = $step * $factor;
-            $values[$stepval]  = $stepval;
+            $values[$stepval] = $stepval;
             if ($stepval >= $value) {
                 break;
             }
