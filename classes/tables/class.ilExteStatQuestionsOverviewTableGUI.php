@@ -260,18 +260,13 @@ class ilExteStatQuestionsOverviewTableGUI extends ilExteStatTableGUI
 
         if (!empty($details)) {
             // show action menu
-            $list = new ilAdvancedSelectionListGUI();
-            $list->setSelectionHeaderClass('small');
-            $list->setItemLinkClass('small');
-            $list->setId('actl_' . $data['question_id'] . '_' . $this->getId());
-            $list->setListTitle($this->plugin->txt('show_details'));
-
+            $actions = [];
             foreach ($details as $class => $evaluation) {
                 $this->ctrl->setParameter($this->parent_obj, 'qid', $data['question_id']);
                 $this->ctrl->setParameter($this->parent_obj, 'details', $class);
-                $list->addItem($evaluation->getTitle(), '', $this->ctrl->getLinkTarget($this->parent_obj, 'showQuestionDetails'));
+                $actions[] = $this->uiFactory->button()->shy($evaluation->getTitle(), $this->ctrl->getLinkTarget($this->parent_obj, 'showQuestionDetails'));
             }
-            $content = $list->getHTML();
+            $content = $this->uiRenderer->render($this->uiFactory->dropdown()->standard($actions)->withLabel($this->plugin->txt('show_details')));
         } else {
             $content = '';
         }

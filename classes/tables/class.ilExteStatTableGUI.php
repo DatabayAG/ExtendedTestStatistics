@@ -4,6 +4,8 @@
 
 abstract class ilExteStatTableGUI extends ilTable2GUI
 {
+    protected $uiFactory;
+    protected $uiRenderer;
     protected ?object $parent_obj;
     protected string $parent_cmd;
 
@@ -17,6 +19,11 @@ abstract class ilExteStatTableGUI extends ilTable2GUI
      */
     public function __construct(?object $a_parent_obj, string $a_parent_cmd = "")
     {
+        global $DIC;
+
+        $this->uiFactory = $DIC->ui()->factory();
+        $this->uiRenderer = $DIC->ui()->renderer();
+
         $this->parent_obj = $a_parent_obj;
         $this->parent_cmd = $a_parent_cmd;
         $this->plugin = $a_parent_obj->getPlugin();
