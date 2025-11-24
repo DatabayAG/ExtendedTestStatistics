@@ -36,8 +36,15 @@ class ilExtendedTestStatisticsUIHookGUI extends ilUIHookPluginGUI
 
 
                 if ($this->ctrl->getCmdClass() == 'iltestparticipantsgui') {
-                    $this->tabs->removeSubTab('tst_results_aggregated');
                     $this->ctrl->saveParameterByClass('ilExtendedTestStatisticsPageGUI', 'ref_id');
+
+                    foreach ($this->tabs->target as $target) {
+                        if (($target['id'] ?? '') == 'participants') {
+                            $this->tabs->sub_target[] = $target;
+                            break;
+                        }
+                    }
+                    $this->tabs->setSubTabActive('participants');
 
                     // we need to use the deprecated method because evaluation sub tabs work with automatic activation
                     // with addSubTab the new sub tabs would always be activated
@@ -69,9 +76,8 @@ class ilExtendedTestStatisticsUIHookGUI extends ilUIHookPluginGUI
                 if (strtolower($this->ctrl->getCmdClass()) == 'ilextendedteststatisticspagegui') {
                     // reuse the tabs that were saved from the test gui
                     $this->restoreTabs('iltestparticipantsgui');
-
                     // this works because the tabs are rendered after the sub tabs
-                    $this->tabs->activateTab('statistics');
+                    $this->tabs->activateTab('participants');
                 }
                 break;
 
