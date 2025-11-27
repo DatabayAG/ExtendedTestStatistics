@@ -63,7 +63,7 @@ class ilExteEvalQuestionPercentCorrect extends ilExteEvalQuestion
                 0,
                 ilExteStatValue::TYPE_PERCENTAGE,
                 0,
-                $this->txt('not_assigned'),
+                $this->plugin->txt('not_enough_test_results'),
                 ilExteStatValue::ALERT_UNKNOWN
             );
         }

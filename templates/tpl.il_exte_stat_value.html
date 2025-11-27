@@ -1,28 +1,11 @@
 <!-- BEGIN cell -->
-<div id="{ID}" class="{CLASS}">
+<span class="{CLASS}" aria-describedby="{ARIA_DESCRIBED_BY}">
     <!-- BEGIN value -->
     <span>{CONTENT}</span>
     <!-- END value -->
 
-    <!-- BEGIN uncertain_value -->
-    <i>{CONTENT}</i>
-    <!-- END uncertain_value -->
-
-    <!-- BEGIN comment -->
-    <sup><span class="text-muted">&#9432;</span></sup>
-    <!-- END comment -->
-
-    <!-- BEGIN good -->
-    <sup><span class="text-success glyphicon glyphicon-ok"></span></sup>
-    <!-- END good  -->
-    <!-- BEGIN medium -->
-    <sup><span class="text-warning glyphicon glyphicon-adjust"></span></sup>
-    <!-- END medium -->
-    <!-- BEGIN bad -->
-    <sup><span class="text-danger glyphicon glyphicon-exclamation-sign"></span></sup>
-    <!-- END bad -->
-    <!-- BEGIN unknown -->
-    <sup><span class="text-muted glyphicon glyphicon-question-sign"></span></sup>
-    <!-- END unknown -->
-</div>
+    <!-- BEGIN sign -->
+    <sup>{SIGN}</sup>
+    <!-- END sign  -->
+</span>
 <!-- END cell -->

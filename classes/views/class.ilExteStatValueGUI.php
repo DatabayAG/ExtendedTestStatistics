@@ -2,16 +2,32 @@
 
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
+use ILIAS\UI\Factory;
+use ILIAS\UI\Renderer;
+use ILIAS\UI\Help\Topic as HelpTopic;
+use ILIAS\UI\Help\Purpose as HelpPurpose;
+use ILIAS\UI\HelpTextRetriever;
+use ILIAS\UI\Implementation\Render\TooltipRenderer;
+use ILIAS\UI\Implementation\Render\ilJavaScriptBinding;
+
 /**
  * GUI for showing statistical values
  */
-class ilExteStatValueGUI
+class ilExteStatValueGUI implements HelpTextRetriever
 {
+    private Factory $factory;
+    private Renderer $renderer;
+    private ilJavaScriptBinding $js_binding;
+    private TooltipRenderer $tooltip_renderer;
     protected ilLanguage $lng;
     protected ilExtendedTestStatisticsPlugin $plugin;
+    protected ilGlobalTemplateInterface $tpl;
 
     /** @var bool	comments should be shown as tooltip  */
     protected bool $show_comment = true;
+
+    /** @var string[] help texts */
+    protected $help_texts = [];
 
     /**
      * Constructor.
@@ -21,7 +37,12 @@ class ilExteStatValueGUI
         global $DIC;
 
         $this->lng = $DIC->language();
+        $this->tpl = $DIC->ui()->mainTemplate();
+        $this->factory = $DIC->ui()->factory();
+        $this->renderer = $DIC->ui()->renderer();
         $this->plugin = $a_plugin;
+        $this->js_binding = new ilJavaScriptBinding($this->tpl);
+        $this->tooltip_renderer = new TooltipRenderer($this, fn($path, $f1, $f2) => new ilTemplate($path, $f1, $f2));
     }
 
     /**
@@ -110,27 +131,47 @@ class ilExteStatValueGUI
 
         // comment and alert
         if ($this->show_comment && !empty($value->comment)) {
-            $sign = 'comment';
             $comment = $value->comment;
         }
         if ($value->alert != ilExteStatValue::ALERT_NONE) {
             $sign = $value->alert;
+        } elseif ($comment !== null) {
+            $sign = 'info';
         }
 
         // render cell
         switch ($align) {
             case ilExteStatValue::ALIGN_RIGHT:
-                $this->renderSign($template, $sign, 'ilExteStatSignRight', $comment);
-                $this->renderContent($template, $content, 'ilExteStatValueRight', $comment, $value->uncertain);
+                if ($sign !== null) {
+                    $this->renderSign($template, $sign, 'ilExteStatSignRight', $comment);
+                }
+                if ($content !== null) {
+                    $this->renderContent($template, $content, 'ilExteStatValueRight', $comment, $value->uncertain);
+                }
                 break;
             case ilExteStatValue::ALIGN_LEFT:
             default:
-                $this->renderContent($template, $content, 'ilExteStatValueLeft', $comment, $value->uncertain);
-                $this->renderSign($template, $sign, 'ilExteStatSignLeft', $comment);
+                if (!$content !== null) {
+                    $this->renderContent($template, $content, 'ilExteStatValueLeft', $comment, $value->uncertain);
+                }
+                if ($sign !== null) {
+                    $this->renderSign($template, $sign, 'ilExteStatSignLeft', $comment);
+                }
                 break;
         }
-
         return $template->get();
+    }
+
+    private function addHelpText(string $text): HelpTopic
+    {
+        $topic = md5($text);
+        $this->help_texts[$topic] = $text;
+        return new HelpTopic($topic);
+    }
+
+    public function getHelpText(HelpPurpose $purpose, HelpTopic ...$topics): array
+    {
+        return array_map(fn($topic) => $this->help_texts[$topic->get()] ?? '', $topics);
     }
 
     /**
@@ -138,19 +179,20 @@ class ilExteStatValueGUI
      */
     protected function renderContent(ilTemplate $template, string $content, string $class, ?string $comment = null, bool $uncertain = false)
     {
-        $id = rand(1000000, 9999999);
-
-        if (!empty($comment)) {
-            ilTooltipGUI::addTooltip($id, $comment);
+        if ($uncertain) {
+            $content = '<i>' . $content . '</i>';
         }
 
-        $template->setCurrentBlock($uncertain ? 'uncertain_value' : 'value');
+        if (!empty($comment)) {
+            $content = $this->renderWithTooltip($content, $comment);
+        }
+
+        $template->setCurrentBlock('value');
         $template->setVariable('CONTENT', $content);
         $template->parseCurrentBlock();
 
         $template->setCurrentBlock('cell');
         $template->setVariable('CLASS', $class);
-        $template->setVariable('ID', $id);
         $template->parseCurrentBlock();
     }
 
@@ -159,20 +201,43 @@ class ilExteStatValueGUI
      */
     protected function renderSign(ilTemplate $template, ?string $sign, string $class, ?string $comment = null)
     {
-        $id = rand(1000000, 9999999);
+        $sign = match ($sign) {
+            'info' => '<span class="text-muted">&#9432;</span>',
+            'good' => '<span class="text-success glyphicon glyphicon-ok"</span>',
+            'medium' => '<span class="text-warning glyphicon glyphicon-adjust"</span>',
+            'bad' => '<span class="text-danger glyphicon glyphicon-exclamation-sign"</span>',
+            'unknown' => '<span class="text-muted glyphicon glyphicon-question-sign"</span>',
+            default => ''
+        };
 
         if (!empty($comment)) {
-            ilTooltipGUI::addTooltip($id, $comment);
+            $sign = $this->renderWithTooltip($sign, $comment);
         }
 
-        if (in_array($sign, ['good', 'medium', 'bad', 'unknown'])) {
-            $template->touchBlock($sign);
-        }
+        $template->setCurrentBlock('sign');
+        $template->setVariable('SIGN', $sign);
+        $template->parseCurrentBlock();
 
         $template->setCurrentBlock('cell');
         $template->setVariable('CLASS', $class);
-        $template->setVariable('ID', $id);
         $template->parseCurrentBlock();
+    }
+
+    public function renderWithTooltip(string $content, string $tooltip): string
+    {
+        $tooltip_id = $this->js_binding->createId();
+        $content_id = $this->js_binding->createId();
+
+        $embedding = $this->tooltip_renderer->maybeGetTooltipEmbedding($this->addHelpText($tooltip));
+        $component = $this->factory->legacy($content)->withAdditionalOnLoadCode($embedding[1]);
+        $this->js_binding->addOnLoadCode($component->getOnLoadCode()($content_id));
+
+        $tpl = $this->plugin->getTemplate('tpl.il_exte_stat_tooltip.html');
+        $tpl->setVariable('CONTENT', $this->renderer->render($component));
+        $tpl->setVariable("ARIA_DESCRIBED_BY", $tooltip_id);
+        $tpl->setVariable("ID", $content_id);
+
+        return $embedding[0]($tooltip_id, $tpl->get());
     }
 
     /**
@@ -230,4 +295,5 @@ class ilExteStatValueGUI
 
         return $text;
     }
+
 }
