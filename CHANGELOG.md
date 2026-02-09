@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 3.0 (2026-02-09)
+- Update for ILIAS 10
+- Diagram for grade statistic in excel export
+- New columns for answer frequency in excel export
+- New eveluation of group selectivity
+
 ## Version 2.4 (2025-02-03)
 - Fix 043843: Identifier "ilUser" is not defined
 
